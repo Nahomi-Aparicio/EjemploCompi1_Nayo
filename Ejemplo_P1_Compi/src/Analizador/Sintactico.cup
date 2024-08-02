@@ -1,0 +1,108 @@
+// ------------  Paquetes e importaciones ------------
+package Analizador;
+
+import java_cup.runtime.*;
+import java.util.LinkedList;
+
+
+//------> Codigo para el parser
+//------> Declaracion de variables, funciones y funciones de error
+
+parser code 
+{:
+    public String resultado = ""; //Variable para mostrar en consola
+    public static LinkedList<Object> instrucciones; //Lista con instrucciones a ejecutar
+
+
+    public void syntax_error(Symbol s)
+    {
+            System.err.println("Identificador "+ s.value + " no reconocido. Se ha recuperado del error." );
+    }
+
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+    {
+            System.err.println("Identificador " +s.value + " no reconocido.");
+    }
+
+:}
+
+
+//------> Codigo para las acciones gramaticales (no tocar)
+action code
+{:  :}
+
+
+//------> Declaración de terminales
+terminal String PARENTESIS_A, PARENTESIS_C, LLAV_A, LLAV_C,DOSP, FLECH,
+ PCOMA, COMA , INTER ,DIFEREN,COMPLE ;
+
+terminal String ID,CARACTERES;
+
+terminal String ENTERO;
+
+//-----------palabras reservadas
+terminal String CONJ;
+terminal String EVALUAR;
+terminal String OPERA;
+
+//------> Declaración de no terminales
+non terminal inicio;
+non terminal instruccion, instrucciones;
+
+non terminal notaciones,notacion, conjuntos;
+
+non terminal operaciones, operacion,operacionD,nombre_conjunto, variosconjunt, eva, datos;
+
+// ------------  GRAMATICA  ------------
+
+start with inicio; //Simbolo inicial
+
+
+inicio ::= LLAV_A instrucciones LLAV_C {: System.out.println("todo esta ok"); :}
+;
+
+instrucciones ::= instruccion instrucciones
+                |instruccion
+;
+instruccion ::= conjuntos
+            |operaciones
+            |eva
+;
+//----------------------------CONJUNTOS---------------------------------------
+conjuntos ::= CONJ DOSP ID FLECH notacion:a PCOMA  {: System.out.println( a); :}
+; 
+notacion ::= notaciones:b notacion:a {:RESULT=a.toString()+ b.toString();:} 
+                |notaciones:a {:RESULT=a;:} 
+;
+notaciones::= COMA:a {:RESULT=a;:} 
+            |ENTERO:a {:RESULT=a;:} 
+            |ID:a {:RESULT=a;:} 
+            |CARACTERES:a {:RESULT=a;:} 
+;
+
+
+
+//---------------------------OPERACIONES
+operaciones::=OPERA DOSP ID FLECH operacion nombre_conjunto PCOMA
+;
+
+operacion ::=  operacion operacionD
+            |operacionD
+;
+operacionD::=  INTER:a  {: System.out.println( a); :} 
+            |DIFEREN:a {: System.out.println( a); :}
+            |COMPLE:a {: System.out.println( a); :}
+; 
+nombre_conjunto::=  nombre_conjunto variosconjunt
+            |variosconjunt
+;
+variosconjunt::=  LLAV_A ID LLAV_C
+;
+
+//---------------------------evaluar
+
+eva::=  EVALUAR PARENTESIS_A datos PARENTESIS_C PCOMA
+;
+
+datos ::= LLAV_A notacion LLAV_C COMA ID 
+;
